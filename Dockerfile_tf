@@ -1,0 +1,23 @@
+# Minimal container to run Terraform
+FROM alpine:3.8
+
+ENV TERRAFORM_VERSION="0.11.8"
+
+VOLUME ["/terraform"]
+
+WORKDIR /terraform
+
+RUN set -xe; \
+    apk upgrade --no-cache ; \
+    apk add --no-cache bash curl jq ; \
+    echo "*** Installing TERRAFORM ${TERRAFORM_VERSION} ***"; \
+    curl -O https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip ;\
+    curl -s https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS | grep terraform_${TERRAFORM_VERSION}_linux_amd64.zip > terraform_${TERRAFORM_VERSION}_SHA256SUMS ;\
+    sha256sum -c terraform_${TERRAFORM_VERSION}_SHA256SUMS; \
+    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /bin; \
+    rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip; \
+    echo "*** DONE ***";
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["--help"]
